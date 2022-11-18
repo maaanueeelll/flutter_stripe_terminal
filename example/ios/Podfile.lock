@@ -1,0 +1,29 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_stripe_terminal (0.0.1):
+    - Flutter
+    - StripeTerminal (= 2.0)
+  - StripeTerminal (2.0.0)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_stripe_terminal (from `.symlinks/plugins/flutter_stripe_terminal/ios`)
+
+SPEC REPOS:
+  trunk:
+    - StripeTerminal
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_stripe_terminal:
+    :path: ".symlinks/plugins/flutter_stripe_terminal/ios"
+
+SPEC CHECKSUMS:
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_stripe_terminal: 82e5718906d87c7216d7f23fb08e471352b95599
+  StripeTerminal: 92673ce3ecb15ae2f8436fc47c78fdf729955462
+
+PODFILE CHECKSUM: 9b30da706c782e048277779a01ce55c0622f1606
+
+COCOAPODS: 1.11.3
