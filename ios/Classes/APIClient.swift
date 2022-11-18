@@ -23,8 +23,8 @@ class APIClient: ConnectionTokenProvider {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        // request.addValue("Bearer " + FlutterStripeTerminal.shared.authToken!,
-        //forHTTPHeaderField: "Authorization")
+        request.addValue("Bearer " + FlutterStripeTerminal.shared.authToken!,
+        forHTTPHeaderField: "Authorization")
         let task = session.dataTask(with: request) { (data, response, error) in
             if let data = data {
                 do {
