@@ -15,13 +15,17 @@ public func handleMethodCall(_ call: FlutterMethodCall, result: @escaping Flutte
     
     switch(call.method) {
     case "setConnectionTokenParams":
-        FlutterStripeTerminal.shared.setConnectionTokenParams(serverUrl: arguments["serverUrl"] as! String, authToken: arguments["authToken"] as! String, result: result)
+        FlutterStripeTerminal.shared.setConnectionTokenParams(serverUrl: arguments["serverUrl"] as! String, authToken: arguments["authToken"] as! String, requestType: arguments["requestType"] as! String,  result: result)
     case "searchForReaders":
         FlutterStripeTerminal.shared.searchForReaders(simulated: arguments["simulated"] as! Bool,result: result)
     case "connectToReader":
         FlutterStripeTerminal.shared.connectToReader(readerSerialNumber: arguments["readerSerialNumber"] as! String, locationId: arguments["locationId"] as! String, result: result)
     case "processPayment":
         FlutterStripeTerminal.shared.processPayment(clientSecret: arguments["clientSecret"] as! String, result: result)
+    case "updateReader":
+        FlutterStripeTerminal.shared.updateReader(result: result)
+    case "connectionStatus":
+        FlutterStripeTerminal.shared.connectionsStatus(result: result)
     default:
         result(FlutterMethodNotImplemented)
     }

@@ -20,7 +20,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    FlutterStripeTerminal.setConnectionTokenParams('https://wholedata.io/appcomande/connection-token/', '')
+    FlutterStripeTerminal.setConnectionTokenParams(serverUrl: 'https://wholedata.io/appcomande/connection-token/', authToken: '', requestType: 'GET')
         .then((value) => FlutterStripeTerminal.startTerminalEventStream())
         .then((value) => FlutterStripeTerminal.searchForReaders(simulated: true))
         .catchError((error) => print(error));
@@ -53,14 +53,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initiatePayment() async {
-    final url = Uri.parse("http://devapi.custofood.com/api/payments/payment_intent");
-    final response = await http.post(url, body: {
-      'amount': '1'
-    }, headers: {
-      'Authorization':
-          "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjYyNywiaXNzIjoiaHR0cDovL2RldmFwaS5jdXN0b2Zvb2QuY29tL2FwaS9sb2dpbiIsImlhdCI6MTY0NDQwODk5NCwiZXhwIjoxNjQ3MDAwOTk0LCJuYmYiOjE2NDQ0MDg5OTQsImp0aSI6ImNVY0I5b0RJRTU5dXRhSk4ifQ.O9ML8yibl6J_8Zgd_ZV4JW1uijV6YZynKxMZA5YOsY0"
-    });
+    final url = Uri.parse("https://wholedata.io/appcomande/payment-intent-test/");
+    final response = await http.post(url, body: {'amount': '1'});
 
+    print(response.statusCode);
     print(response.body);
 
     String intentId = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
@@ -82,11 +78,44 @@ class _MyAppState extends State<MyApp> {
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ElevatedButton(
-                        onPressed: () {
-                          initiatePayment();
-                        },
-                        child: Text('Initiate payment')),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(5),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                FlutterStripeTerminal.updateReader();
+                              },
+                              child: Text('Update reader')),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(5),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                FlutterStripeTerminal.connectionStatus();
+                              },
+                              child: Text('Check connection')),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(5),
+                          child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(5),
+                          child: ElevatedButton(onPressed: () {}, child: Text('Dsconnect')),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(5),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                initiatePayment();
+                              },
+                              child: Text('Initiate payment')),
+                        ),
+                      ],
+                    ),
                     ListView.builder(
                       shrinkWrap: true,
                       itemCount: readers.length,

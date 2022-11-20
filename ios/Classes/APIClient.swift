@@ -14,23 +14,21 @@ class APIClient: ConnectionTokenProvider {
     func fetchConnectionToken(_ completion: @escaping ConnectionTokenCompletionBlock) {
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config)
-        
-        print(FlutterStripeTerminal.shared.serverUrl!)
-        
+                
         guard let url = URL(string: FlutterStripeTerminal.shared.serverUrl!) else {
             fatalError("Invalid backend URL")
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("Bearer " + FlutterStripeTerminal.shared.authToken!,
-        forHTTPHeaderField: "Authorization")
+        request.httpMethod = FlutterStripeTerminal.shared.requestType
+        if !FlutterStripeTerminal.shared.authToken!.isEmpty {
+            request.addValue("Bearer " + FlutterStripeTerminal.shared.authToken!,
+                             forHTTPHeaderField: "Authorization")}
         let task = session.dataTask(with: request) { (data, response, error) in
             if let data = data {
                 do {
                     // Warning: casting using `as? [String: String]` looks simpler, but isn't safe:
                     let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                    print(json)
                     if let secret = json?["secret"] as? String {
                         completion(secret, nil)
                     }

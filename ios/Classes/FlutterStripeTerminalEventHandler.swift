@@ -9,7 +9,26 @@ import Foundation
 import Flutter
 import StripeTerminal
 
-class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, DiscoveryDelegate, TerminalDelegate, BluetoothReaderDelegate {
+class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, DiscoveryDelegate, TerminalDelegate, BluetoothReaderDelegate, ReconnectionDelegate {
+    
+    func terminal(_ terminal: Terminal, didStartReaderReconnect cancelable: Cancelable) {
+        eventSink!([
+            "readerReconnectionStatus": "READER_RECONNECTION"
+        ])
+    }
+    
+    func terminalDidSucceedReaderReconnect(_ terminal: Terminal) {
+        eventSink!([
+            "readerReconnectionStatus": "READER_RECONNECTION_SUCCEDED"
+        ])
+    }
+    
+    func terminalDidFailReaderReconnect(_ terminal: Terminal) {
+        eventSink!([
+            "readerReconnectionStatus": "READER_RECONNECTION_FAILED"
+        ])
+    }
+    
     
     static let shared = FlutterStripeTerminalEventHandler()
     var eventSink: FlutterEventSink?

@@ -27,17 +27,19 @@ class FlutterStripeTerminal {
     return _channel.invokeMethod<T>(method, arguments);
   }
 
-  static Future<bool?> setConnectionTokenParams(String serverUrl, String authToken) async {
-    return _invokeMethod<bool>("setConnectionTokenParams", arguments: {"serverUrl": serverUrl, "authToken": authToken});
+  static Future<bool?> setConnectionTokenParams({required String serverUrl, required String authToken, required String requestType}) async {
+    return _invokeMethod<bool>("setConnectionTokenParams", arguments: {"serverUrl": serverUrl, "authToken": authToken, "requestType": requestType});
   }
 
   static Future<bool?> searchForReaders({required bool simulated}) async {
     return _invokeMethod<bool>("searchForReaders", arguments: {"simulated": simulated});
   }
 
+  static Future<String?> connectionStatus() async {
+    return _invokeMethod<String>("connectionStatus");
+  }
+
   static Future<bool?> connectToReader(String readerSerialNumber, String locationId) async {
-    print(readerSerialNumber);
-    print(locationId);
     return _invokeMethod<bool>("connectToReader", arguments: {"readerSerialNumber": readerSerialNumber, "locationId": locationId});
   }
 
@@ -45,8 +47,12 @@ class FlutterStripeTerminal {
     return Map<String, String>.from(await _invokeMethod('processPayment', arguments: {"clientSecret": clientSecret}))["paymentIntentId"]!;
   }
 
-  static Future<bool?> disconnectReader() async {
-    return _invokeMethod<bool>("disconnectReader");
+//  static Future<bool?> disconnectReader() async {
+//    return _invokeMethod<bool>("disconnectReader");
+//  }
+
+  static Future<bool?> updateReader() async {
+    return _invokeMethod<bool>("updateReader");
   }
 
   static void startTerminalEventStream() {

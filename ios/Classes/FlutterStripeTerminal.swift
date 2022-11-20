@@ -14,11 +14,13 @@ class FlutterStripeTerminal {
     
     var serverUrl: String?
     var authToken: String?
+    var requestType: String?
     var availableReaders: [Reader]?
     
-    func setConnectionTokenParams(serverUrl: String, authToken: String, result: FlutterResult) {
+    func setConnectionTokenParams(serverUrl: String, authToken: String, requestType:String, result: FlutterResult) {
         self.serverUrl = serverUrl
         self.authToken = authToken
+        self.requestType = requestType
         result(true)
     }
     
@@ -36,27 +38,54 @@ class FlutterStripeTerminal {
     }
     
     func connectToReader(readerSerialNumber: String, locationId: String, result: @escaping FlutterResult) {
-        let selectedReaders = availableReaders?.filter { reader in
-            return reader.serialNumber == readerSerialNumber
-        }
-        
-        if (!selectedReaders!.isEmpty) {
-            print(selectedReaders![0])
-            Terminal.shared.connectBluetoothReader(selectedReaders![0], delegate: FlutterStripeTerminalEventHandler.shared, connectionConfig: BluetoothConnectionConfiguration(locationId: locationId)) { _, error in
-                DispatchQueue.main.async {
-                    if let error = error {
-                        result(error)
-                    } else {
-                        result(true)
+        let conn = Terminal.shared.connectedReader
+        if conn == nil {
+            let selectedReaders = self.availableReaders?.filter { reader in
+                return reader.serialNumber == readerSerialNumber
+            }
+            if (!selectedReaders!.isEmpty) {
+                Terminal.shared.connectBluetoothReader(selectedReaders![0], delegate: FlutterStripeTerminalEventHandler.shared, connectionConfig: BluetoothConnectionConfiguration(locationId: locationId, autoReconnectOnUnexpectedDisconnect: true, autoReconnectionDelegate: FlutterStripeTerminalEventHandler.shared)) { _, error in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            result(error)
+                        } else {
+                            result(true)
+                        }
                     }
                 }
             }
         }
+    }
+    
+    func updateReader(result: @escaping FlutterResult) {
         
-        
+        Terminal.shared.installAvailableUpdate()
     }
     
     
+    func connectionsStatus(result: @escaping FlutterResult) {
+        
+        let conn = Terminal.shared.connectionStatus
+        
+        result(conn)
+    }
+
+    
+    func disconnectReader() {
+        Terminal.shared.disconnectReader {error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error disconnection")
+                    print(error)
+                } else {
+                    print("disconnection complete")
+                    
+                }
+            }
+            
+        }
+        
+    }
     
     
     func processPayment(clientSecret: String, result: @escaping FlutterResult) {
