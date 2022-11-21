@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_stripe_terminal/flutter_stripe_terminal.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 
-void main() {
+void main() async {
   runApp(MyApp());
 }
 
@@ -20,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
     FlutterStripeTerminal.setConnectionTokenParams(serverUrl: 'https://wholedata.io/appcomande/connection-token/', authToken: '', requestType: 'GET')
         .then((value) => FlutterStripeTerminal.startTerminalEventStream())
         .then((value) => FlutterStripeTerminal.searchForReaders(simulated: true))
@@ -52,6 +54,15 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void checkPermission() async {
+    var status = await Permission.location.status;
+
+    if (status.isGranted) {
+    } else {
+      Map<Permission, PermissionStatus> status = await [Permission.location].request();
+    }
+  }
+
   void initiatePayment() async {
     final url = Uri.parse("https://wholedata.io/appcomande/payment-intent-test/");
     final response = await http.post(url, body: {'amount': '1'});
@@ -66,10 +77,12 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    checkPermission();
     return MaterialApp(
       home: Scaffold(
           appBar: AppBar(
             title: const Text('Stripe Terminal'),
+            actions: [IconButton(onPressed: (() => setState(() {})), icon: Icon(Icons.refresh_rounded))],
           ),
           body: readers.length == 0
               ? Center(
@@ -78,55 +91,64 @@ class _MyAppState extends State<MyApp> {
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: ElevatedButton(
-                              onPressed: () {
-                                FlutterStripeTerminal.updateReader();
-                              },
-                              child: Text('Update reader')),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: ElevatedButton(
-                              onPressed: () {
-                                FlutterStripeTerminal.connectionStatus();
-                              },
-                              child: Text('Check connection')),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: ElevatedButton(onPressed: () {}, child: Text('Dsconnect')),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: ElevatedButton(
-                              onPressed: () {
-                                initiatePayment();
-                              },
-                              child: Text('Initiate payment')),
-                        ),
-                      ],
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: readers.length,
+                        itemBuilder: (context, position) {
+                          return ListTile(
+                            onTap: () async {
+                              await FlutterStripeTerminal.connectToReader(readers[position].serialNumber, "tml_E3RA4QYozwFugz");
+                            },
+                            title: Text(readers[position].deviceName),
+                          );
+                        },
+                      ),
                     ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: readers.length,
-                      itemBuilder: (context, position) {
-                        return ListTile(
-                          onTap: () async {
-                            await FlutterStripeTerminal.connectToReader(readers[position].serialNumber, "tml_E3RA4QYozwFugz");
-                          },
-                          title: Text(readers[position].deviceName),
-                        );
-                      },
+                    SizedBox(
+                      height: 300,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  FlutterStripeTerminal.updateReader();
+                                },
+                                child: Text('Update reader')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  FlutterStripeTerminal.connectionStatus();
+                                },
+                                child: Text('Check connection')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () async {
+                                  await FlutterStripeTerminal.disconnectReader();
+                                },
+                                child: Text('Dsconnect')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  initiatePayment();
+                                },
+                                child: Text('Initiate payment')),
+                          ),
+                        ],
+                      ),
                     )
                   ],
                 )),

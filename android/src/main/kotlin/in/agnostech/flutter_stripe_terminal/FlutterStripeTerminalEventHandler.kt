@@ -1,9 +1,13 @@
 package `in`.agnostech.flutter_stripe_terminal
 
+import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.stripe.stripeterminal.Terminal
 import com.stripe.stripeterminal.external.callable.*
 import com.stripe.stripeterminal.external.models.*
@@ -15,13 +19,26 @@ class FlutterStripeTerminalEventHandler(private val context: Context): EventChan
     private lateinit var eventSink: EventChannel.EventSink
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+
         Log.d("STRIPE TERMINAL", "event listener called")
+
+
         this.eventSink = events
         val logLevel = LogLevel.VERBOSE
         val tokenProvider = TokenProvider()
-        if (!Terminal.isInitialized()) {
-            Terminal.initTerminal(context, logLevel, tokenProvider, this)
+        try {
+            if (!Terminal.isInitialized()) {
+                Terminal.initTerminal(context, logLevel, tokenProvider, this)
+                Log.d("STRIPE TERMINAL", "terminal initialized")
+            }
+            else{ Log.d("STRIPE TERMINAL", "terminal not initialized")}
         }
+        catch (e: Exception) {
+
+            Log.d("STRIPE TERMINAL", e.toString())
+
+        }
+
     }
 
     fun getDiscoveryListener(): DiscoveryListener {

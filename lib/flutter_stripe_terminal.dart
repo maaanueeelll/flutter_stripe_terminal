@@ -47,9 +47,9 @@ class FlutterStripeTerminal {
     return Map<String, String>.from(await _invokeMethod('processPayment', arguments: {"clientSecret": clientSecret}))["paymentIntentId"]!;
   }
 
-//  static Future<bool?> disconnectReader() async {
-//    return _invokeMethod<bool>("disconnectReader");
-//  }
+  static Future<bool?> disconnectReader() async {
+    return _invokeMethod<bool>("disconnectReader");
+  }
 
   static Future<bool?> updateReader() async {
     return _invokeMethod<bool>("updateReader");
