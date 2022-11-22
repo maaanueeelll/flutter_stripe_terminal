@@ -29,7 +29,6 @@ class FlutterStripeTerminalEventHandler(private val context: Context): EventChan
         try {
             if (!Terminal.isInitialized()) {
                 Terminal.initTerminal(context, logLevel, tokenProvider, this)
-                Log.d("STRIPE TERMINAL", "terminal initialized")
             }
             else{ Log.d("STRIPE TERMINAL", "terminal not initialized")}
         }

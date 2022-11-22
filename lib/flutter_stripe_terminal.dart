@@ -68,11 +68,6 @@ class FlutterStripeTerminal {
           break;
         case "readerUpdateStatus":
           readerUpdateStatus.add(EnumToString.fromString(ReaderUpdateStatus.values, eventData[eventKey])!);
-          if (readerUpdateStatus.value == 'UPDATE_AVAILABLE') {
-            print(readerUpdateStatus.value);
-            print('REQUIRED UPDATE');
-          }
-
           break;
         case "readerEvent":
           readerEvent.add(EnumToString.fromString(ReaderEvent.values, eventData[eventKey])!);

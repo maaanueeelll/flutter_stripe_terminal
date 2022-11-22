@@ -2,10 +2,10 @@ PODS:
   - Flutter (1.0.0)
   - flutter_stripe_terminal (0.0.1):
     - Flutter
-    - StripeTerminal (= 2.0)
+    - StripeTerminal (= 2.5)
   - permission_handler_apple (9.0.4):
     - Flutter
-  - StripeTerminal (2.15.0)
+  - StripeTerminal (2.5.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)

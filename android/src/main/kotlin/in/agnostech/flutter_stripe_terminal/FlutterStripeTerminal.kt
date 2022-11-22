@@ -40,19 +40,16 @@ class FlutterStripeTerminal {
         fun disconnectReader(result: MethodChannel.Result) {
 
             val terminal = Terminal.getInstance()
-            Log.d("STRIPE TERMINAL", terminal.toString())
-            Log.d("STRIPE TERMINAL", terminal.connectionStatus.toString())
+
             if(terminal.connectionStatus.toString() == "CONNECTED") {
                 cancelDiscovery?.cancel(object : Callback {
                     override fun onFailure(e: TerminalException) {
                         Handler(Looper.getMainLooper()).post {
-                            Log.d("STRIPE TERMINAL", "reader discovery cancellation error")
                         }
                     }
 
                     override fun onSuccess() {
                         Handler(Looper.getMainLooper()).post {
-                            Log.d("STRIPE TERMINAL", "reader discovery cancelled")
                         }
                     }
 
@@ -98,11 +95,9 @@ class FlutterStripeTerminal {
                             Handler(Looper.getMainLooper()).post {
                                 result.error(e.errorCode.toLogString(), e.message, null)
                             }
-                            Log.d("flutter", e.message.toString())
                         }
                     })
             } else {
-                Log.d("flutter","terminal not initialized")
             }
 
         }
@@ -113,7 +108,6 @@ class FlutterStripeTerminal {
             result: MethodChannel.Result
         ) {
             val terminal = Terminal.getInstance()
-            Log.d("STRIPE TERMINAL", terminal.connectionStatus.toString())
             if(terminal.connectionStatus.toString() == "NOT_CONNECTED") {
 
                 val reader = availableReadersList!!.filter {
@@ -144,7 +138,6 @@ class FlutterStripeTerminal {
 
         fun connectionStatus(result: MethodChannel.Result){
             val terminal = Terminal.getInstance()
-            Log.d("STRIPE TERMINAL", terminal.connectionStatus.toString())
                 result.success(terminal.connectionStatus.toString())
 
 
@@ -152,17 +145,16 @@ class FlutterStripeTerminal {
 
         fun updateReader(result: MethodChannel.Result){
             val terminal = Terminal.getInstance()
-            Log.d("STRIPE TERMINAL", terminal.toString())
-            Log.d("STRIPE TERMINAL", terminal.connectionStatus.toString())
+
             if(terminal.connectionStatus.toString() == "CONNECTED") {
 
-                terminal.installAvailableUpdate()
+              terminal.installAvailableUpdate()
+                result.success(true)
             }
         }
 
         fun checkUpdateReader(result: MethodChannel.Result){
             val terminal = Terminal.getInstance()
-            Log.d("STRIPE TERMINAL", terminal.toString())
             if(terminal.connectionStatus.toString() == "CONNECTED") {
 
             }
@@ -179,7 +171,6 @@ class FlutterStripeTerminal {
                 }
 
                 override fun onSuccess(paymentIntent: PaymentIntent) {
-                    Log.d("STRIPE TERMINAL", "payment intent retrieved");
                     Handler(Looper.getMainLooper()).post {
                         terminal.collectPaymentMethod(
                             paymentIntent,
@@ -213,14 +204,11 @@ class FlutterStripeTerminal {
                                                     )
                                                 }
                                             }
-
                                         })
                                 }
-
                             })
                     }
                 }
-
             })
         }
     }
