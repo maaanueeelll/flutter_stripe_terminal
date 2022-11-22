@@ -138,7 +138,7 @@ class FlutterStripeTerminal {
 
         fun connectionStatus(result: MethodChannel.Result){
             val terminal = Terminal.getInstance()
-                result.success(terminal.connectionStatus.toString())
+            result.success(terminal.connectionStatus.toString())
 
 
         }
@@ -197,11 +197,13 @@ class FlutterStripeTerminal {
 
                                             override fun onSuccess(paymentIntent: PaymentIntent) {
                                                 Handler(Looper.getMainLooper()).post {
-                                                    result.success(
-                                                        mapOf(
-                                                            "paymentIntentId" to paymentIntent.id
-                                                        )
-                                                    )
+                                                    print(paymentIntent)
+                                                    result.success(paymentIntent)
+                                                    //result.success(
+                                                    //    mapOf(
+                                                    //        "paymentIntentId" to paymentIntent.id,
+                                                    //    )
+                                                    //)
                                                 }
                                             }
                                         })

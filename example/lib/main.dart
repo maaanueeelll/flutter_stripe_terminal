@@ -19,7 +19,8 @@ void initiatePayment() async {
   final url = Uri.parse("https://wholedata.io/appcomande/payment-intent-test/");
   final response = await http.post(url, body: {'amount': '1'});
 
-  String intentId = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
+  final intentId = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
+  print(intentId);
 }
 
 void checkPermission() async {
