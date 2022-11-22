@@ -16,6 +16,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool _updateAvailable = false;
   List<Reader> readers = [];
 
   @override
@@ -42,7 +43,10 @@ class _MyAppState extends State<MyApp> {
     });
 
     FlutterStripeTerminal.readerUpdateStatus.listen((ReaderUpdateStatus updateStatus) {
-      print(updateStatus);
+      if (updateStatus.index == 0) {
+        _updateAvailable = true;
+        setState(() {});
+      } else {}
     });
 
     FlutterStripeTerminal.readerEvent.listen((ReaderEvent readerEvent) {
@@ -67,12 +71,7 @@ class _MyAppState extends State<MyApp> {
     final url = Uri.parse("https://wholedata.io/appcomande/payment-intent-test/");
     final response = await http.post(url, body: {'amount': '1'});
 
-    print(response.statusCode);
-    print(response.body);
-
     String intentId = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
-
-    print(intentId);
   }
 
   @override
@@ -111,14 +110,15 @@ class _MyAppState extends State<MyApp> {
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: EdgeInsets.all(5),
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  FlutterStripeTerminal.updateReader();
-                                },
-                                child: Text('Update reader')),
-                          ),
+                          if (_updateAvailable)
+                            Padding(
+                              padding: EdgeInsets.all(5),
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    FlutterStripeTerminal.updateReader();
+                                  },
+                                  child: Text('Update reader')),
+                            ),
                           Padding(
                             padding: EdgeInsets.all(5),
                             child: ElevatedButton(
@@ -137,7 +137,7 @@ class _MyAppState extends State<MyApp> {
                                 onPressed: () async {
                                   await FlutterStripeTerminal.disconnectReader();
                                 },
-                                child: Text('Dsconnect')),
+                                child: Text('Disconnect')),
                           ),
                           Padding(
                             padding: EdgeInsets.all(5),

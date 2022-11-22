@@ -57,7 +57,6 @@ class FlutterStripeTerminal {
 
   static void startTerminalEventStream() {
     _eventChannel.receiveBroadcastStream().listen((event) {
-      print(event);
       final eventData = Map<String, dynamic>.from(event);
       final eventKey = eventData.keys.first;
       switch (eventKey) {
@@ -69,6 +68,11 @@ class FlutterStripeTerminal {
           break;
         case "readerUpdateStatus":
           readerUpdateStatus.add(EnumToString.fromString(ReaderUpdateStatus.values, eventData[eventKey])!);
+          if (readerUpdateStatus.value == 'UPDATE_AVAILABLE') {
+            print(readerUpdateStatus.value);
+            print('REQUIRED UPDATE');
+          }
+
           break;
         case "readerEvent":
           readerEvent.add(EnumToString.fromString(ReaderEvent.values, eventData[eventKey])!);

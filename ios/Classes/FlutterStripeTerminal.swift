@@ -58,16 +58,17 @@ class FlutterStripeTerminal {
     }
     
     func updateReader(result: @escaping FlutterResult) {
-        
-        Terminal.shared.installAvailableUpdate()
+        let conn = Terminal.shared.connectedReader
+        if conn != nil {
+            Terminal.shared.installAvailableUpdate()
+        }
     }
     
     
     func connectionsStatus(result: @escaping FlutterResult) {
         
         let conn = Terminal.shared.connectionStatus
-        
-        result(conn)
+        print(conn)
     }
 
     
@@ -101,18 +102,21 @@ class FlutterStripeTerminal {
                                 ])
                             } else if let finalError = finalError {
                                 DispatchQueue.main.async {
+                                    print(finalError)
                                     result(finalError)
                                 }
                             }
                         }
                     } else if let processedError = processedError {
                         DispatchQueue.main.async {
+                            print(processedError)
                             result(processedError)
                         }
                     }
                 }
             } else if let retrievedError = retrievedError {
                 DispatchQueue.main.async {
+                    print(retrievedError)
                     result(retrievedError)
                 }
             }

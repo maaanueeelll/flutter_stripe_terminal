@@ -3,11 +3,14 @@ PODS:
   - flutter_stripe_terminal (0.0.1):
     - Flutter
     - StripeTerminal (= 2.0)
-  - StripeTerminal (2.0.0)
+  - permission_handler_apple (9.0.4):
+    - Flutter
+  - StripeTerminal (2.15.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_stripe_terminal (from `.symlinks/plugins/flutter_stripe_terminal/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 SPEC REPOS:
   trunk:
@@ -18,10 +21,13 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_stripe_terminal:
     :path: ".symlinks/plugins/flutter_stripe_terminal/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_stripe_terminal: 82e5718906d87c7216d7f23fb08e471352b95599
+  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   StripeTerminal: 92673ce3ecb15ae2f8436fc47c78fdf729955462
 
 PODFILE CHECKSUM: 9b30da706c782e048277779a01ce55c0622f1606
