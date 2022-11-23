@@ -2,10 +2,10 @@ PODS:
   - Flutter (1.0.0)
   - flutter_stripe_terminal (0.0.1):
     - Flutter
-    - StripeTerminal (= 2.5)
+    - StripeTerminal (= 2.0)
   - permission_handler_apple (9.0.4):
     - Flutter
-  - StripeTerminal (2.5.0)
+  - StripeTerminal (2.0.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -30,6 +30,6 @@ SPEC CHECKSUMS:
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   StripeTerminal: 92673ce3ecb15ae2f8436fc47c78fdf729955462
 
-PODFILE CHECKSUM: 9b30da706c782e048277779a01ce55c0622f1606
+PODFILE CHECKSUM: 775997f741c536251164e3eacf6e34abf2eb7a17
 
 COCOAPODS: 1.11.3

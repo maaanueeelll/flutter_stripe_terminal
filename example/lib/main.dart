@@ -51,6 +51,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool _updateAvailable = false;
+  bool _isupdating = false;
+  double _progress = 0.0;
   List<Reader> readers = [];
 
   @override
@@ -59,7 +61,7 @@ class _HomeState extends State<Home> {
 
     FlutterStripeTerminal.setConnectionTokenParams(serverUrl: 'https://wholedata.io/appcomande/connection-token/', authToken: '', requestType: 'GET')
         .then((value) => FlutterStripeTerminal.startTerminalEventStream())
-        .then((value) => FlutterStripeTerminal.searchForReaders(simulated: true))
+        .then((value) => FlutterStripeTerminal.searchForReaders(simulated: false))
         .catchError((error) => print(error));
 
     FlutterStripeTerminal.readersList.listen((List<Reader> readersList) {
@@ -77,126 +79,30 @@ class _HomeState extends State<Home> {
     });
 
     FlutterStripeTerminal.readerUpdateStatus.listen((ReaderUpdateStatus updateStatus) {
-      print('UPDATE STATUS INDEX ${updateStatus.index}');
       switch (updateStatus.index) {
         case 0:
           _updateAvailable = true;
           setState(() {});
           break;
         case 1:
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (_) {
-              return Dialog(
-                // The background color
-                backgroundColor: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      // The loading indicator
-                      CircularProgressIndicator(
-                          // color: greenLogo,
-                          ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Text(
-                        'Update requested',
-                        //    style: TextStyle(color: greyLogo),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
+          print('Starting update reader');
+          _isupdating = true;
+          setState(() {});
           break;
         case 2:
-          Navigator.of(context).pop();
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (_) {
-              return Dialog(
-                // The background color
-                backgroundColor: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      // The loading indicator
-                      CircularProgressIndicator(
-                          // color: greenLogo,
-                          ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Text(
-                        'Updating reader',
-                        //    style: TextStyle(color: greyLogo),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-
           break;
         case 3:
-          Navigator.of(context).pop();
-          showDialog(
-            barrierDismissible: true,
-            context: context,
-            builder: (_) {
-              return Dialog(
-                // The background color
-                backgroundColor: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      // The loading indicator
-
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Text(
-                        'Update complete',
-                        //    style: TextStyle(color: greyLogo),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-
+          print('UPdate Finished');
+          _isupdating = false;
+          setState(() {});
           break;
       }
+    });
+
+    FlutterStripeTerminal.readerProgressUpdate.listen((double progress) {
+      _progress = progress * 100;
+      _progress = _progress;
+      setState(() {});
     });
 
     FlutterStripeTerminal.readerEvent.listen((ReaderEvent readerEvent) {
@@ -215,75 +121,106 @@ class _HomeState extends State<Home> {
         title: const Text('Stripe Terminal'),
         actions: [IconButton(onPressed: (() => setState(() {})), icon: Icon(Icons.refresh_rounded))],
       ),
-      body: readers.length == 0
-          ? Center(
-              child: Text('No devices found'),
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: readers.length,
-                    itemBuilder: (context, position) {
-                      return ListTile(
-                        onTap: () async {
-                          await FlutterStripeTerminal.connectToReader(readers[position].serialNumber, "tml_E3RA4QYozwFugz");
-                        },
-                        title: Text(readers[position].deviceName),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(
-                  height: 300,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (_updateAvailable)
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                await FlutterStripeTerminal.updateReader();
-                              },
-                              child: Text('Update reader')),
+      body: _isupdating
+          ? Dialog(
+              // The background color
+              backgroundColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    // The loading indicator
+                    CircularProgressIndicator(
+                        // color: greenLogo,
                         ),
-                      Padding(
-                        padding: EdgeInsets.all(5),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              FlutterStripeTerminal.connectionStatus();
-                            },
-                            child: Text('Check connection')),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(5),
-                        child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(5),
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              await FlutterStripeTerminal.disconnectReader();
-                            },
-                            child: Text('Disconnect')),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(5),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              initiatePayment();
-                            },
-                            child: Text('Initiate payment')),
-                      ),
-                    ],
-                  ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Text(
+                      'Updating reader, do not exit\n${_progress.round()}%',
+                      textAlign: TextAlign.center,
+                      //    style: TextStyle(color: greyLogo),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : readers.length == 0
+              ? Center(
+                  child: Text('No devices found'),
                 )
-              ],
-            ),
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: readers.length,
+                        itemBuilder: (context, position) {
+                          return ListTile(
+                            onTap: () async {
+                              await FlutterStripeTerminal.connectToReader(readers[position].serialNumber, "tml_E3RA4QYozwFugz");
+                            },
+                            title: Text(readers[position].deviceName),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 300,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_updateAvailable)
+                            Padding(
+                              padding: EdgeInsets.all(5),
+                              child: ElevatedButton(
+                                  onPressed: () async {
+                                    await FlutterStripeTerminal.updateReader();
+                                  },
+                                  child: Text('Update reader')),
+                            ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  FlutterStripeTerminal.connectionStatus();
+                                },
+                                child: Text('Check connection')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () async {
+                                  await FlutterStripeTerminal.disconnectReader();
+                                },
+                                child: Text('Disconnect')),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(5),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  initiatePayment();
+                                },
+                                child: Text('Initiate payment')),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
     );
   }
 }

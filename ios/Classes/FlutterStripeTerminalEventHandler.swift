@@ -46,8 +46,15 @@ class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, Discove
     }
     
     func reader(_ reader: Reader, didReportReaderSoftwareUpdateProgress progress: Float) {
+        print("PROGRESS INSTALLATION")
+        print(progress)
         eventSink!([
-            "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS"
+           "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS",
+            //"readerProgressStatus": progress
+        ])
+        eventSink!([
+           // "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS",
+            "readerProgressStatus": progress
         ])
     }
     

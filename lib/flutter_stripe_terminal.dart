@@ -18,6 +18,7 @@ class FlutterStripeTerminal {
   static BehaviorSubject<ReaderUpdateStatus> readerUpdateStatus = BehaviorSubject<ReaderUpdateStatus>();
   static BehaviorSubject<ReaderEvent> readerEvent = BehaviorSubject<ReaderEvent>();
   static BehaviorSubject<String> readerInputEvent = BehaviorSubject<String>();
+  static BehaviorSubject<double> readerProgressUpdate = BehaviorSubject<double>();
   static BehaviorSubject<List<Reader>> readersList = BehaviorSubject<List<Reader>>();
 
   static Future<T?> _invokeMethod<T>(
@@ -72,6 +73,9 @@ class FlutterStripeTerminal {
           break;
         case "readerUpdateStatus":
           readerUpdateStatus.add(EnumToString.fromString(ReaderUpdateStatus.values, eventData[eventKey])!);
+          break;
+        case "readerProgressStatus":
+          readerProgressUpdate.add(eventData[eventKey]);
           break;
         case "readerEvent":
           readerEvent.add(EnumToString.fromString(ReaderEvent.values, eventData[eventKey])!);
