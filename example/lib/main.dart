@@ -6,6 +6,11 @@ import 'package:flutter_stripe_terminal/flutter_stripe_terminal.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 
+final DOMAIN = 'https://wholedata.io';
+final SERIAL = 'WPC323211067225';
+
+final LOCATION = 'tml_E3xJlw22PhZZ6J';
+
 void main() async {
   runApp(MyApp());
 }
@@ -16,11 +21,11 @@ class MyApp extends StatefulWidget {
 }
 
 void initiatePayment() async {
-  final url = Uri.parse("https://wholedata.io/appcomande/payment-intent-test/");
-  final response = await http.post(url, body: {'amount': '1'});
+  final url = Uri.parse("${DOMAIN}/appcomande/payment-intent-test/");
+  final response = await http.post(url, body: {'amount': '40'});
 
-  final intentId = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
-  print(intentId);
+  final intent = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
+  print(intent);
 }
 
 void checkPermission() async {
@@ -51,31 +56,69 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool _updateAvailable = false;
-  bool _isupdating = false;
+  bool _isConnected = false;
+  bool _showLoader = false;
   double _progress = 0.0;
+  String _textToDisplayLoader = 'Attendere..';
   List<Reader> readers = [];
 
   @override
   void initState() {
     super.initState();
 
-    FlutterStripeTerminal.setConnectionTokenParams(serverUrl: 'https://wholedata.io/appcomande/connection-token/', authToken: '', requestType: 'GET')
-        .then((value) => FlutterStripeTerminal.startTerminalEventStream())
-        .then((value) => FlutterStripeTerminal.searchForReaders(simulated: false))
+    FlutterStripeTerminal.setConnectionTokenParams(serverUrl: '${DOMAIN}/appcomande/connection-token/', authToken: '', requestType: 'GET')
+        .then((value) async {
+          FlutterStripeTerminal.startTerminalEventStream();
+        })
+        .then((value) async {
+          FlutterStripeTerminal.searchForReaders(simulated: false);
+        })
+        .then((value) async {})
         .catchError((error) => print(error));
 
     FlutterStripeTerminal.readersList.listen((List<Reader> readersList) {
       setState(() {
         readers = readersList;
       });
+      for (var element in readers) {
+        if (!_isConnected) {
+          if (element.serialNumber == SERIAL) {
+            FlutterStripeTerminal.connectToReader(SERIAL, 'tml_E3xJlw22PhZZ6J');
+          }
+        }
+      }
     });
 
     FlutterStripeTerminal.readerConnectionStatus.listen((ReaderConnectionStatus connectionStatus) {
-      print(connectionStatus);
+      switch (connectionStatus.index) {
+        case 0:
+          _isConnected = true;
+          setState(() {});
+          break;
+      }
     });
 
     FlutterStripeTerminal.readerPaymentStatus.listen((ReaderPaymentStatus paymentStatus) {
-      print(paymentStatus);
+      print('INDEX ${paymentStatus.index}');
+      print(paymentStatus.name);
+
+      switch (paymentStatus.index) {
+        case 1:
+          _textToDisplayLoader = '';
+          _showLoader = false;
+          setState(() {});
+          break;
+        case 2:
+          _textToDisplayLoader = 'Avvicinare la carta..';
+          _showLoader = true;
+          setState(() {});
+          break;
+        case 3:
+          _textToDisplayLoader = 'Pagamento in corso..';
+          _showLoader = true;
+          setState(() {});
+          break;
+      }
     });
 
     FlutterStripeTerminal.readerUpdateStatus.listen((ReaderUpdateStatus updateStatus) {
@@ -85,15 +128,13 @@ class _HomeState extends State<Home> {
           setState(() {});
           break;
         case 1:
-          print('Starting update reader');
-          _isupdating = true;
+          _showLoader = true;
           setState(() {});
           break;
         case 2:
           break;
         case 3:
-          print('UPdate Finished');
-          _isupdating = false;
+          _showLoader = false;
           setState(() {});
           break;
       }
@@ -101,16 +142,45 @@ class _HomeState extends State<Home> {
 
     FlutterStripeTerminal.readerProgressUpdate.listen((double progress) {
       _progress = progress * 100;
-      _progress = _progress;
+      _textToDisplayLoader = 'Updating reader, do not exit\n${_progress.round()}%';
       setState(() {});
     });
 
     FlutterStripeTerminal.readerEvent.listen((ReaderEvent readerEvent) {
-      print(readerEvent);
+      print('INDEX ${readerEvent.index}');
+
+      print(readerEvent.name);
+      switch (readerEvent.index) {
+        case 2:
+          _textToDisplayLoader = 'Inserire di nuovo la carta..';
+          _showLoader = true;
+          setState(() {});
+          break;
+        case 3:
+          _textToDisplayLoader = 'Inserire carta..';
+          _showLoader = true;
+          setState(() {});
+          break;
+        case 4:
+          _textToDisplayLoader = 'Inserire la carta..';
+          _showLoader = true;
+          setState(() {});
+          break;
+        case 6:
+          _textToDisplayLoader = 'Rimuovere la carta..';
+          _showLoader = true;
+          setState(() {});
+          break;
+        default:
+          _textToDisplayLoader = '';
+          _showLoader = false;
+          setState(() {});
+          break;
+      }
     });
 
     FlutterStripeTerminal.readerInputEvent.listen((String readerInputEvent) {
-      print(readerInputEvent);
+      // print(readerInputEvent);
     });
   }
 
@@ -121,7 +191,7 @@ class _HomeState extends State<Home> {
         title: const Text('Stripe Terminal'),
         actions: [IconButton(onPressed: (() => setState(() {})), icon: Icon(Icons.refresh_rounded))],
       ),
-      body: _isupdating
+      body: _showLoader
           ? Dialog(
               // The background color
               backgroundColor: Colors.white,
@@ -141,7 +211,7 @@ class _HomeState extends State<Home> {
                       height: 15,
                     ),
                     Text(
-                      'Updating reader, do not exit\n${_progress.round()}%',
+                      _textToDisplayLoader,
                       textAlign: TextAlign.center,
                       //    style: TextStyle(color: greyLogo),
                     ),
@@ -166,7 +236,7 @@ class _HomeState extends State<Home> {
                         itemBuilder: (context, position) {
                           return ListTile(
                             onTap: () async {
-                              await FlutterStripeTerminal.connectToReader(readers[position].serialNumber, "tml_E3RA4QYozwFugz");
+                              await FlutterStripeTerminal.connectToReader(readers[position].serialNumber, LOCATION);
                             },
                             title: Text(readers[position].deviceName),
                           );
@@ -179,7 +249,7 @@ class _HomeState extends State<Home> {
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (_updateAvailable)
+                          if (_updateAvailable && _isConnected)
                             Padding(
                               padding: EdgeInsets.all(5),
                               child: ElevatedButton(
@@ -191,31 +261,34 @@ class _HomeState extends State<Home> {
                           Padding(
                             padding: EdgeInsets.all(5),
                             child: ElevatedButton(
-                                onPressed: () {
-                                  FlutterStripeTerminal.connectionStatus();
+                                onPressed: () async {
+                                  String? conn = await FlutterStripeTerminal.connectionStatus();
+                                  print(conn);
                                 },
                                 child: Text('Check connection')),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(5),
-                            child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(5),
-                            child: ElevatedButton(
-                                onPressed: () async {
-                                  await FlutterStripeTerminal.disconnectReader();
-                                },
-                                child: Text('Disconnect')),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(5),
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  initiatePayment();
-                                },
-                                child: Text('Initiate payment')),
-                          ),
+                          //  Padding(
+                          //    padding: EdgeInsets.all(5),
+                          //    child: ElevatedButton(onPressed: () {}, child: Text('Check update')),
+                          //  ),
+                          if (_isConnected)
+                            Padding(
+                              padding: EdgeInsets.all(5),
+                              child: ElevatedButton(
+                                  onPressed: () async {
+                                    await FlutterStripeTerminal.disconnectReader();
+                                  },
+                                  child: Text('Disconnect')),
+                            ),
+                          if (_isConnected)
+                            Padding(
+                              padding: EdgeInsets.all(5),
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    initiatePayment();
+                                  },
+                                  child: Text('Initiate payment')),
+                            ),
                         ],
                       ),
                     )

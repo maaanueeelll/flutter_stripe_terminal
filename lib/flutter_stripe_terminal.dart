@@ -44,10 +44,6 @@ class FlutterStripeTerminal {
     return _invokeMethod<bool>("connectToReader", arguments: {"readerSerialNumber": readerSerialNumber, "locationId": locationId});
   }
 
-  // static Future<String> processPayment(String clientSecret) async {
-  //   return Map<String, String>.from(await _invokeMethod('processPayment', arguments: {"clientSecret": clientSecret}))["paymentIntentId"]!;
-  // }
-
   static Future<Map<String, String>> processPayment(String clientSecret) async {
     return Map<String, String>.from(await _invokeMethod('processPayment', arguments: {"clientSecret": clientSecret}));
   }
