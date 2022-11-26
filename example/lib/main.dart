@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_stripe_terminal/flutter_stripe_terminal.dart';
@@ -20,12 +21,14 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-void initiatePayment() async {
+Future<bool> initiatePayment() async {
   final url = Uri.parse("${DOMAIN}/appcomande/payment-intent-test/");
   final response = await http.post(url, body: {'amount': '40'});
 
   final intent = await FlutterStripeTerminal.processPayment(jsonDecode(response.body)['client_secret']);
   print(intent);
+
+  return true;
 }
 
 void checkPermission() async {
@@ -65,7 +68,6 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-
     FlutterStripeTerminal.setConnectionTokenParams(serverUrl: '${DOMAIN}/appcomande/connection-token/', authToken: '', requestType: 'GET')
         .then((value) async {
           FlutterStripeTerminal.startTerminalEventStream();
@@ -76,20 +78,39 @@ class _HomeState extends State<Home> {
         .then((value) async {})
         .catchError((error) => print(error));
 
-    FlutterStripeTerminal.readersList.listen((List<Reader> readersList) {
+    FlutterStripeTerminal.readersList.listen((List<Reader> readersList) async {
       setState(() {
         readers = readersList;
       });
       for (var element in readers) {
         if (!_isConnected) {
           if (element.serialNumber == SERIAL) {
-            FlutterStripeTerminal.connectToReader(SERIAL, 'tml_E3xJlw22PhZZ6J');
+            bool? check = await FlutterStripeTerminal.connectToReader(SERIAL, 'tml_E3xJlw22PhZZ6J');
+            if (check!) {
+              FlutterStripeTerminal.connectionStatus().then((value) {
+                print('BOOL ${value}');
+                switch (value) {
+                  case 'connected':
+                    _isConnected = true;
+                    break;
+                  case 'not_connected':
+                    _isConnected = false;
+                    break;
+                  case 'connceting':
+                    _isConnected = false;
+                    break;
+                  default:
+                }
+                setState(() {});
+              });
+            }
           }
         }
       }
     });
 
     FlutterStripeTerminal.readerConnectionStatus.listen((ReaderConnectionStatus connectionStatus) {
+      print(connectionStatus);
       switch (connectionStatus.index) {
         case 0:
           _isConnected = true;
@@ -171,6 +192,16 @@ class _HomeState extends State<Home> {
           _showLoader = true;
           setState(() {});
           break;
+        case 10:
+          _textToDisplayLoader = '';
+          _showLoader = false;
+          setState(() {});
+          break;
+        case 11:
+          _textToDisplayLoader = 'Controllare il lettore..';
+          _showLoader = true;
+          setState(() {});
+          break;
         default:
           _textToDisplayLoader = '';
           _showLoader = false;
@@ -181,6 +212,8 @@ class _HomeState extends State<Home> {
 
     FlutterStripeTerminal.readerInputEvent.listen((String readerInputEvent) {
       // print(readerInputEvent);
+      // _showLoader = true;
+      setState(() {});
     });
   }
 
@@ -284,8 +317,15 @@ class _HomeState extends State<Home> {
                             Padding(
                               padding: EdgeInsets.all(5),
                               child: ElevatedButton(
-                                  onPressed: () {
-                                    initiatePayment();
+                                  onPressed: () async {
+                                    bool check = await initiatePayment();
+
+                                    if (check) {
+                                      setState(() {
+                                        _showLoader = false;
+                                        _textToDisplayLoader = '';
+                                      });
+                                    }
                                   },
                                   child: Text('Initiate payment')),
                             ),

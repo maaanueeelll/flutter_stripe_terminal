@@ -16,6 +16,8 @@ class FlutterStripeTerminal {
     var authToken: String?
     var requestType: String?
     var availableReaders: [Reader]?
+    var discoverCancelable: Cancelable?
+    
     
     func setConnectionTokenParams(serverUrl: String, authToken: String, requestType:String, result: FlutterResult) {
         self.serverUrl = serverUrl
@@ -26,7 +28,7 @@ class FlutterStripeTerminal {
     
     func searchForReaders(simulated: Bool, result: @escaping FlutterResult) {
         let config = DiscoveryConfiguration(discoveryMethod: DiscoveryMethod.bluetoothScan, simulated: simulated)
-        Terminal.shared.discoverReaders(config, delegate: FlutterStripeTerminalEventHandler.shared) { error in
+        self.discoverCancelable = Terminal.shared.discoverReaders(config, delegate: FlutterStripeTerminalEventHandler.shared) { error in
             DispatchQueue.main.async {
                 if let error = error {
                     result(error)
@@ -68,9 +70,21 @@ class FlutterStripeTerminal {
     func connectionsStatus(result: @escaping FlutterResult) {
         
         let conn = Terminal.shared.connectionStatus
-        print(conn)
+        switch conn.rawValue {
+        case 0:
+            result("not_connected")
+        case 1:
+            result("connected")
+        case 2:
+            result("connecting")
+            
+            
+        default:
+            result("not_connected")
+        }
+        result(conn.rawValue)
     }
-
+    
     
     func disconnectReader() {
         Terminal.shared.disconnectReader {error in
@@ -91,18 +105,33 @@ class FlutterStripeTerminal {
     
     func processPayment(clientSecret: String, result: @escaping FlutterResult) {
         let terminal = Terminal.shared
+        //  discoverCancelable?.cancel()
+        
+        
+        
         terminal.retrievePaymentIntent(clientSecret: clientSecret) { retrievedIntent, retrievedError in
             if let retrievedPaymentIntent = retrievedIntent {
                 terminal.collectPaymentMethod(retrievedPaymentIntent) { processedIntent, processedError in
                     if let processedPaymentIntent = processedIntent {
                         terminal.processPayment(processedPaymentIntent) {finalIntent, finalError in
                             if let finalPaymentIntent = finalIntent {
-                                result([
-                                    "paymentIntentId": finalPaymentIntent.stripeId
-                                ])
+                                switch finalPaymentIntent.status.rawValue{
+                                    
+                                    
+                                case 5:
+                                    result([
+                                        "paymentIntentId": finalPaymentIntent.stripeId,
+                                        "status": "SUCCEDED"
+                                    ])
+                                    
+                                default:
+                                    break
+                                }
+                                
+                                
+                                
                             } else if let finalError = finalError {
                                 DispatchQueue.main.async {
-                                    print(finalError)
                                     result(finalError)
                                 }
                             }

@@ -59,6 +59,7 @@ class FlutterStripeTerminal {
   static void startTerminalEventStream() {
     _eventChannel.receiveBroadcastStream().listen((event) {
       final eventData = Map<String, dynamic>.from(event);
+      print('EVENT DATA ${eventData}');
       final eventKey = eventData.keys.first;
       switch (eventKey) {
         case "readerConnectionStatus":

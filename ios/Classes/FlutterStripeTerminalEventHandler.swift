@@ -11,6 +11,10 @@ import StripeTerminal
 
 class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, DiscoveryDelegate, TerminalDelegate, BluetoothReaderDelegate, ReconnectionDelegate {
     
+    
+    static let shared = FlutterStripeTerminalEventHandler()
+    var eventSink: FlutterEventSink?
+    
     func terminal(_ terminal: Terminal, didStartReaderReconnect cancelable: Cancelable) {
         eventSink!([
             "readerReconnectionStatus": "READER_RECONNECTION"
@@ -30,9 +34,6 @@ class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, Discove
     }
     
     
-    static let shared = FlutterStripeTerminalEventHandler()
-    var eventSink: FlutterEventSink?
-    
     func reader(_ reader: Reader, didReportAvailableUpdate update: ReaderSoftwareUpdate) {
         eventSink!([
             "readerUpdateStatus": "UPDATE_AVAILABLE"
@@ -46,14 +47,13 @@ class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, Discove
     }
     
     func reader(_ reader: Reader, didReportReaderSoftwareUpdateProgress progress: Float) {
-        print("PROGRESS INSTALLATION")
-        print(progress)
+        
         eventSink!([
-           "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS",
+            "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS",
             //"readerProgressStatus": progress
         ])
         eventSink!([
-           // "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS",
+            // "readerUpdateStatus": "SOFTWARE_UPDATE_IN_PROGRESS",
             "readerProgressStatus": progress
         ])
     }
@@ -65,15 +65,46 @@ class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, Discove
     }
     
     func reader(_ reader: Reader, didRequestReaderInput inputOptions: ReaderInputOptions = []) {
-        eventSink!([
-            "readerInputEvent": Terminal.stringFromReaderInputOptions(inputOptions)
-        ])
+        print("IMPUT EVENT")
+        print(Terminal.stringFromReaderInputOptions(inputOptions))
+      
+        switch Terminal.stringFromReaderInputOptions(inputOptions)
+        {
+      
+            
+        case "Insert / Tap":
+            eventSink!([
+                // "readerEvent": Terminal.stringFromReaderDisplayMessage(displayMessage)
+                "readerEvent": "INSERT_CARD"
+            ])
+        default:
+            break
+            
+        }
     }
     
     func reader(_ reader: Reader, didRequestReaderDisplayMessage displayMessage: ReaderDisplayMessage) {
-        eventSink!([
-            "readerEvent": Terminal.stringFromReaderDisplayMessage(displayMessage)
-        ])
+        print("DISPLAY EVENT")
+        print(Terminal.stringFromReaderDisplayMessage(displayMessage))
+        switch Terminal.stringFromReaderDisplayMessage(displayMessage)
+        {
+        case "Remove Card":
+            eventSink!([
+                // "readerEvent": Terminal.stringFromReaderDisplayMessage(displayMessage)
+                "readerEvent": "REMOVE_CARD"
+            ])
+            
+        case "Insert / Tap":
+            eventSink!([
+                // "readerEvent": Terminal.stringFromReaderDisplayMessage(displayMessage)
+                "readerEvent": "INSERT_CARD"
+            ])
+        default:
+            break
+            
+        }
+        
+        
     }
     
     func reader(_ reader: Reader, didReportBatteryLevel batteryLevel: Float, status: BatteryStatus, isCharging: Bool) {
@@ -82,19 +113,38 @@ class FlutterStripeTerminalEventHandler: NSObject, FlutterStreamHandler, Discove
         ])
     }
     
-    func reader(_ reader: Reader, didReportReaderEvent event: ReaderEvent, info: [AnyHashable : Any]?) {
-        eventSink!([
-            "readerEvent": Terminal.stringFromReaderEvent(event)
-        ])
+    func reader(_ reader: Reader, didReportReaderEvent event: ReaderEvent , info: [AnyHashable : Any]?) {
+        print("REPORT REDADER EVENT")
+        print(Terminal.stringFromReaderEvent(event))
+        switch Terminal.stringFromReaderEvent(event){
+            
+        case "Card Inserted":
+            eventSink!([
+                "readerEvent": "CARD_INSERTED"
+            ])
+        case "Card Removed":
+            eventSink!([
+                "readerEvent": "CARD_REMOVED"
+            ])
+        default:
+            break
+        }
+        
+        
+        
     }
     
     func terminal(_ terminal: Terminal, didChangePaymentStatus status: PaymentStatus) {
+        print("PAYMENT STATUS")
+        print(Terminal.stringFromPaymentStatus(status))
         eventSink!([
             "readerPaymentStatus": Terminal.stringFromPaymentStatus(status)
         ])
     }
     
     func terminal(_ terminal: Terminal, didChangeConnectionStatus status: ConnectionStatus) {
+        print("CONNECTION STSTUS")
+        print(Terminal.stringFromConnectionStatus(status))
         eventSink!([
             "readerConnectionStatus": Terminal.stringFromConnectionStatus(status)
         ])
